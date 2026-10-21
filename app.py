@@ -52,48 +52,48 @@ th{background:#f8f9fa} input,select,textarea{width:100%;padding:8px;margin:5px 0
 <div class="col-form">
     <div class="col">
         <label>Подал (ФИО):</label>
-        <input name="author" required value="{{ r.created_by if edit_mode else '' }}">
+        <input name="author" required value="{{ r.created_by if r else '' }}">
         <label>Телефон:</label>
-        <input name="phone" value="{{ r.phone if edit_mode else '' }}">
+        <input name="phone" value="{{ r.phone if r else '' }}">
         <label>Дата подачи (не меняется):</label>
-        <input value="{{ r.created_at if edit_mode else now }}" readonly style="background:#eee;">
+        <input value="{{ r.created_at if r else now }}" readonly style="background:#eee;">
     </div>
     <div class="col">
         <label>Горизонт:</label>
-        <input name="horizon" required value="{{ r.horizon if edit_mode else '' }}">
+        <input name="horizon" required value="{{ r.horizon if r else '' }}">
         <label>Участок:</label>
-        <input name="area" value="{{ r.area if edit_mode else '' }}">
+        <input name="area" value="{{ r.area if r else '' }}">
         <label>Безопасность:</label>
         <select name="safety">
-            <option value="Да" {% if edit_mode and r.safety == 'Да' %}selected{% endif %}>Да (обезопасено)</option>
-            <option value="Нет" {% if edit_mode and r.safety == 'Нет' %}selected{% endif %}>Нет (опасно)</option>
-            <option value="Не требуется" {% if edit_mode and r.safety == 'Не требуется' %}selected{% endif %}>Не требуется</option>
+            <option value="Да" {% if r and r.safety == 'Да' %}selected{% endif %}>Да (обезопасено)</option>
+            <option value="Нет" {% if r and r.safety == 'Нет' %}selected{% endif %}>Нет (опасно)</option>
+            <option value="Не требуется" {% if r and r.safety == 'Не требуется' %}selected{% endif %}>Не требуется</option>
         </select>
     </div>
     <div class="col">
         <label>Приоритет:</label>
         <select name="priority">
-            <option value="Низкий" {% if edit_mode and r.priority == 'Низкий' %}selected{% endif %}>Низкий</option>
-            <option value="Обычный" {% if not edit_mode or r.priority == 'Обычный' %}selected{% endif %}>Обычный</option>
-            <option value="Высокий" {% if edit_mode and r.priority == 'Высокий' %}selected{% endif %}>Высокий</option>
-            <option value="Срочный" {% if edit_mode and r.priority == 'Срочный' %}selected{% endif %}>Срочный</option>
+            <option value="Низкий" {% if r and r.priority == 'Низкий' %}selected{% endif %}>Низкий</option>
+            <option value="Обычный" {% if not r or r.priority == 'Обычный' %}selected{% endif %}>Обычный</option>
+            <option value="Высокий" {% if r and r.priority == 'Высокий' %}selected{% endif %}>Высокий</option>
+            <option value="Срочный" {% if r and r.priority == 'Срочный' %}selected{% endif %}>Срочный</option>
         </select>
         <label>Исполнитель:</label>
-        <input name="executor" value="{{ r.executor if edit_mode else '' }}">
+        <input name="executor" value="{{ r.executor if r else '' }}">
         <label>Статус:</label>
         <select name="status">
-            <option value="Новая" {% if not edit_mode or r.status == 'Новая' %}selected{% endif %}>Новая</option>
-            <option value="Принята" {% if edit_mode and r.status == 'Принята' %}selected{% endif %}>Принята</option>
-            <option value="В работе" {% if edit_mode and r.status == 'В работе' %}selected{% endif %}>В работе</option>
-            <option value="Выполнена" {% if edit_mode and r.status == 'Выполнена' %}selected{% endif %}>Выполнена</option>
-            <option value="Отклонена" {% if edit_mode and r.status == 'Отклонена' %}selected{% endif %}>Отклонена</option>
+            <option value="Новая" {% if not r or r.status == 'Новая' %}selected{% endif %}>Новая</option>
+            <option value="Принята" {% if r and r.status == 'Принята' %}selected{% endif %}>Принята</option>
+            <option value="В работе" {% if r and r.status == 'В работе' %}selected{% endif %}>В работе</option>
+            <option value="Выполнена" {% if r and r.status == 'Выполнена' %}selected{% endif %}>Выполнена</option>
+            <option value="Отклонена" {% if r and r.status == 'Отклонена' %}selected{% endif %}>Отклонена</option>
         </select>
     </div>
 </div>
 <label>Описание задачи:</label>
-<textarea name="desc" rows="2">{{ r.description if edit_mode else '' }}</textarea>
+<textarea name="desc" rows="2">{{ r.description if r else '' }}</textarea>
 <label>Комментарий:</label>
-<textarea name="comment" rows="1">{{ r.comment if edit_mode else '' }}</textarea>
+<textarea name="comment" rows="1">{{ r.comment if r else '' }}</textarea>
 <button type="submit" class="btn">{{ 'Сохранить изменения' if edit_mode else 'Подать заявку' }}</button>
 </form>
 {% if edit_mode %}<div style="text-align:center;margin-top:10px;"><a href="/">Отмена</a></div>{% endif %}
@@ -121,7 +121,7 @@ def index():
     rows = conn.execute("SELECT * FROM requests ORDER BY id DESC").fetchall()
     conn.close()
     now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-    return render_template_string(HTML_PAGE, requests=rows, edit_mode=False, now=now)
+    return render_template_string(HTML_PAGE, requests=rows, edit_mode=False, now=now, r=None)
 @app.route('/create', methods=['POST'])
 def create():
     now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
